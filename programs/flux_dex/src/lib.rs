@@ -1,9 +1,13 @@
 use anchor_lang::prelude::*;
+
+// 先声明模块
 pub mod error;
 pub mod instructions;
 pub mod state;
 pub mod utils;
 
+// 导入所需的类型 - 注意这里要指定具体路径
+pub use error::*;
 pub use instructions::*;
 pub use state::*;
 pub use utils::*;

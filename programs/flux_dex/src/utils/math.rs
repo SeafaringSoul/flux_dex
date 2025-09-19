@@ -1,3 +1,4 @@
+// programs/flux_dex/src/utils/math.rs
 use crate::error::FluxDexError;
 use anchor_lang::prelude::*;
 
@@ -36,7 +37,9 @@ impl FixedPoint {
     }
 
     pub fn div(&self, other: &Self) -> Result<Self> {
-        require!(other.value > 0, FluxDexError::DivisionByZero);
+        if other.value == 0 {
+            return Err(FluxDexError::DivisionByZero.into());
+        }
         let result = self
             .value
             .checked_mul(Self::SCALE)
@@ -58,11 +61,13 @@ impl MathUtils {
         output_reserve: u64,
         fee_bps: u16,
     ) -> Result<u64> {
-        require!(input_amount > 0, FluxDexError::InvalidInputAmount);
-        require!(
-            input_reserve > 0 && output_reserve > 0,
-            FluxDexError::InsufficientLiquidity
-        );
+        // 检查输入参数
+        if input_amount == 0 {
+            return Err(FluxDexError::InvalidInputAmount.into());
+        }
+        if input_reserve == 0 || output_reserve == 0 {
+            return Err(FluxDexError::InsufficientLiquidity.into());
+        }
 
         let fee_factor = 10000u128
             .checked_sub(fee_bps as u128)
@@ -95,9 +100,12 @@ impl MathUtils {
         volatility_score: u16, // 0-10000 (0-100%)
         liquidity_score: u16,  // 0-10000 (0-100%)
     ) -> Result<u16> {
-        require!(base_fee <= 10000, FluxDexError::InvalidFeeTier);
-        require!(volatility_score <= 10000, FluxDexError::InvalidCalculation);
-        require!(liquidity_score <= 10000, FluxDexError::InvalidCalculation);
+        if base_fee > 10000 {
+            return Err(FluxDexError::InvalidFeeTier.into());
+        }
+        if volatility_score > 10000 || liquidity_score > 10000 {
+            return Err(FluxDexError::InvalidCalculation.into());
+        }
 
         // 波动性越高，费率越高
         let volatility_adjustment = volatility_score / 100; // 最高增加1%
@@ -123,11 +131,12 @@ impl MathUtils {
         input_reserve: u64,
         output_reserve: u64,
     ) -> Result<u16> {
-        require!(input_amount > 0, FluxDexError::InvalidInputAmount);
-        require!(
-            input_reserve > 0 && output_reserve > 0,
-            FluxDexError::InsufficientLiquidity
-        );
+        if input_amount == 0 {
+            return Err(FluxDexError::InvalidInputAmount.into());
+        }
+        if input_reserve == 0 || output_reserve == 0 {
+            return Err(FluxDexError::InsufficientLiquidity.into());
+        }
 
         let k = (input_reserve as u128)
             .checked_mul(output_reserve as u128)
@@ -191,12 +200,15 @@ impl MathUtils {
         reserve_a: u64,
         reserve_b: u64,
     ) -> Result<(u64, u64)> {
-        require!(lp_tokens > 0, FluxDexError::InvalidInputAmount);
-        require!(total_supply > 0, FluxDexError::InsufficientLiquidity);
-        require!(
-            lp_tokens <= total_supply,
-            FluxDexError::InsufficientLiquidity
-        );
+        if lp_tokens == 0 {
+            return Err(FluxDexError::InvalidInputAmount.into());
+        }
+        if total_supply == 0 {
+            return Err(FluxDexError::InsufficientLiquidity.into());
+        }
+        if lp_tokens > total_supply {
+            return Err(FluxDexError::InsufficientLiquidity.into());
+        }
 
         let amount_a = (lp_tokens as u128)
             .checked_mul(reserve_a as u128)
@@ -219,10 +231,9 @@ impl MathUtils {
         volatility: u16,  // 历史波动率
         risk_profile: u8, // 风险档次: 1=保守, 2=平衡, 3=激进
     ) -> Result<(FixedPoint, FixedPoint)> {
-        require!(
-            risk_profile >= 1 && risk_profile <= 3,
-            FluxDexError::InvalidRiskProfile
-        );
+        if risk_profile < 1 || risk_profile > 3 {
+            return Err(FluxDexError::InvalidRiskProfile.into());
+        }
 
         // 根据风险档次调整价格区间宽度
         let base_range = match risk_profile {

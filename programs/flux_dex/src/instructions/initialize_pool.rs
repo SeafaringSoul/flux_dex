@@ -30,6 +30,8 @@ pub struct InitializePool<'info> {
         payer = authority,
         token::mint = token_a_mint,
         token::authority = pool,
+        seeds = [TOKEN_A_VAULT_SEED,pool.key().as_ref()],
+        bump
     )]
     pub token_a_vault: Account<'info, TokenAccount>,
 
@@ -38,6 +40,8 @@ pub struct InitializePool<'info> {
         payer = authority,
         token::mint = token_b_mint,
         token::authority = pool,
+        seeds = [TOKEN_B_VAULT_SEED,pool.key().as_ref()],
+        bump
     )]
     pub token_b_vault: Account<'info, TokenAccount>,
 
@@ -47,6 +51,8 @@ pub struct InitializePool<'info> {
         payer = authority,
         mint::decimals = 6,
         mint::authority = pool,
+        seeds = [LP_MINT_SEED,pool.key().as_ref()],
+        bump,
     )]
     pub lp_mint: Account<'info, Mint>,
 

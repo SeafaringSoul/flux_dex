@@ -1,3 +1,4 @@
+// programs/flux_dex/src/error.rs
 use anchor_lang::prelude::*;
 
 #[error_code]
@@ -142,50 +143,4 @@ pub fn map_math_error(error: &str) -> FluxDexError {
         "Price out of bounds" => FluxDexError::PriceOutOfBounds,
         _ => FluxDexError::InvalidCalculation,
     }
-}
-
-// 错误检查宏
-#[macro_export]
-macro_rules! require {
-    ($condition:expr, $error:expr) => {
-        if !$condition {
-            return Err($error.into());
-        }
-    };
-}
-
-#[macro_export]
-macro_rules! require_eq {
-    ($left:expr, $right:expr, $error:expr) => {
-        if $left != $right {
-            return Err($error.into());
-        }
-    };
-}
-
-#[macro_export]
-macro_rules! require_neq {
-    ($left:expr, $right:expr, $error:expr) => {
-        if $left == $right {
-            return Err($error.into());
-        }
-    };
-}
-
-#[macro_export]
-macro_rules! require_gt {
-    ($left:expr, $right:expr, $error:expr) => {
-        if $left <= $right {
-            return Err($error.into());
-        }
-    };
-}
-
-#[macro_export]
-macro_rules! require_gte {
-    ($left:expr, $right:expr, $error:expr) => {
-        if $left < $right {
-            return Err($error.into());
-        }
-    };
 }
